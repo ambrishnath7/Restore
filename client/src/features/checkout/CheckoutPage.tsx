@@ -1,0 +1,7 @@
+import Typography from "@mui/material/Typography"
+
+export default function CheckoutPage() {
+  return (
+    <Typography variant="h3">Only authorized users should be able to see this</Typography>
+  )
+}
