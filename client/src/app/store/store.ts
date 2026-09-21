@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit"
 import { useDispatch, useSelector, type TypedUseSelectorHook } from "react-redux"
 import { counterSlice } from "../../features/contact/counterReducer"
 import { catalogApi } from "../../features/catalog/catalogApi"
+import { catalogSlice } from "../../features/catalog/catalogSlice"
 import { errorApi } from "../../features/about/errorApi"
 import { basketApi } from "../../features/basket/basketApi"
 import { uiSlice } from "../layout/uiSlice"
@@ -10,6 +11,7 @@ export const store = configureStore({
   reducer: {
     counter: counterSlice.reducer,
     ui: uiSlice.reducer,
+    catalog: catalogSlice.reducer,
     [catalogApi.reducerPath]: catalogApi.reducer,
     [errorApi.reducerPath]: errorApi.reducer,
     [basketApi.reducerPath]: basketApi.reducer

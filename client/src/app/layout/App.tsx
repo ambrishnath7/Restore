@@ -5,6 +5,10 @@ import Box from "@mui/material/Box"
 import { createTheme, ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
 import { useAppSelector } from "../store/store"
+import { ScrollRestoration } from "react-router-dom"
+
+// ...inside the App component's JSX, wherever the router-level content is:
+<ScrollRestoration />
 
 function App() {
   const darkMode = useAppSelector(state => state.ui.darkMode)
