@@ -3,7 +3,11 @@ import { toast } from "react-toastify"
 import { startLoading, stopLoading } from "../layout/uiSlice"
 import { router } from "../routes/Routes"
 
-const customBaseQuery = fetchBaseQuery({ baseUrl: 'https://localhost:5004/api', credentials: 'include' })
+
+const customBaseQuery = fetchBaseQuery({
+  baseUrl: import.meta.env.VITE_API_URL,
+  credentials: 'include'
+})
 
 const sleep = () => new Promise(resolve => setTimeout(resolve, 1000))
 
@@ -35,19 +39,23 @@ export const baseQueryWithErrorHandling: BaseQueryFn<string | FetchArgs, unknown
           toast.error(responseData.title)
         }
         break
+
       case 401:
         if (typeof responseData === 'object' && 'title' in responseData) {
           toast.error(responseData.title)
         }
         break
+
       case 404:
         router.navigate('/not-found')
         break
+
       case 500:
         if (typeof responseData === 'object') {
           router.navigate('/server-error', { state: { error: responseData } })
         }
         break
+
       default:
         break
     }
