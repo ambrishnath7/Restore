@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Entities.OrderAggregate;
@@ -6,7 +8,13 @@ namespace API.Entities.OrderAggregate;
 public class PaymentSummary
 {
     public int Last4 { get; set; }
+
+    [Required]
     public required string Brand { get; set; }
+
+    [JsonPropertyName("exp_month")]
     public int ExpMonth { get; set; }
+
+    [JsonPropertyName("exp_year")]
     public int ExpYear { get; set; }
 }

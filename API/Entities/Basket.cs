@@ -24,7 +24,7 @@ public class Basket
 
         if (existingItem == null)
         {
-            Items.Add(new BasketItem { Product = product, Quantity = quantity });
+            Items.Add(new BasketItem { Product = product, ProductId = product.Id, Quantity = quantity });
         }
         else
         {

@@ -9,58 +9,81 @@ function isBasketItem(product: Product | Item): product is Item {
 }
 
 export const basketApi = createApi({
-  reducerPath: 'basketApi',
+  reducerPath: "basketApi",
   baseQuery: baseQueryWithErrorHandling,
-  tagTypes: ['Basket'],
+  tagTypes: ["Basket"],
+
   endpoints: (builder) => ({
     fetchBasket: builder.query<Basket, void>({
       query: () => ({
-        url: 'basket'
+        url: "basket"
       }),
-      providesTags: ['Basket']
+      providesTags: ["Basket"]
     }),
 
-    addBasketItem: builder.mutation<Basket, { product: Product | Item, quantity: number }>({
+    addBasketItem: builder.mutation<
+      Basket,
+      { product: Product | Item; quantity: number }
+    >({
       query: ({ product, quantity }) => {
-        const productId = isBasketItem(product) ? product.productId : product.id
+        const productId = isBasketItem(product)
+          ? product.productId
+          : product.id
 
         return {
           url: `basket?productId=${productId}&quantity=${quantity}`,
-          method: 'POST'
+          method: "POST"
         }
       },
 
-      onQueryStarted: async ({ product, quantity }, { dispatch, queryFulfilled }) => {
-        const productId = isBasketItem(product) ? product.productId : product.id
+      onQueryStarted: async (
+        { product, quantity },
+        { dispatch, queryFulfilled }
+      ) => {
+        const productId = isBasketItem(product)
+          ? product.productId
+          : product.id
 
         let isNewBasket = false
 
         const patchResult = dispatch(
-          basketApi.util.updateQueryData('fetchBasket', undefined, (draft) => {
-            if (!draft?.basketId) {
-              isNewBasket = true
-              return
-            }
+          basketApi.util.updateQueryData(
+            "fetchBasket",
+            undefined,
+            (draft) => {
+              if (!draft?.basketId) {
+                isNewBasket = true
+                return
+              }
 
-            const existingItem = draft.items.find(item => item.productId === productId)
-
-            if (existingItem) {
-              existingItem.quantity += quantity
-            } else {
-              draft.items.push(
-                isBasketItem(product)
-                  ? product
-                  : { ...product, productId: product.id, quantity }
+              const existingItem = draft.items.find(
+                item => item.productId === productId
               )
+
+              if (existingItem) {
+                existingItem.quantity += quantity
+              } else {
+                draft.items.push(
+                  isBasketItem(product)
+                    ? product
+                    : {
+                        ...product,
+                        productId: product.id,
+                        quantity
+                      }
+                )
+              }
             }
-          })
+          )
         )
 
         try {
           await queryFulfilled
 
           if (isNewBasket) {
-            dispatch(basketApi.util.invalidateTags(['Basket']))
+            dispatch(
+              basketApi.util.invalidateTags(["Basket"])
+            )
           }
         } catch (error) {
           console.log(error)
@@ -69,25 +92,37 @@ export const basketApi = createApi({
       }
     }),
 
-    removeBasketItem: builder.mutation<void, { productId: number, quantity: number }>({
+    removeBasketItem: builder.mutation<
+      void,
+      { productId: number; quantity: number }
+    >({
       query: ({ productId, quantity }) => ({
         url: `basket?productId=${productId}&quantity=${quantity}`,
-        method: 'DELETE'
+        method: "DELETE"
       }),
 
-      onQueryStarted: async ({ productId, quantity }, { dispatch, queryFulfilled }) => {
+      onQueryStarted: async (
+        { productId, quantity },
+        { dispatch, queryFulfilled }
+      ) => {
         const patchResult = dispatch(
-          basketApi.util.updateQueryData('fetchBasket', undefined, (draft) => {
-            const itemIndex = draft.items.findIndex(item => item.productId === productId)
+          basketApi.util.updateQueryData(
+            "fetchBasket",
+            undefined,
+            (draft) => {
+              const itemIndex = draft.items.findIndex(
+                item => item.productId === productId
+              )
 
-            if (itemIndex >= 0) {
-              draft.items[itemIndex].quantity -= quantity
+              if (itemIndex >= 0) {
+                draft.items[itemIndex].quantity -= quantity
 
-              if (draft.items[itemIndex].quantity <= 0) {
-                draft.items.splice(itemIndex, 1)
+                if (draft.items[itemIndex].quantity <= 0) {
+                  draft.items.splice(itemIndex, 1)
+                }
               }
             }
-          })
+          )
         )
 
         try {
@@ -111,6 +146,7 @@ export const basketApi = createApi({
             undefined,
             (draft) => {
               draft.items = []
+              draft.basketId = ""
             }
           )
         )

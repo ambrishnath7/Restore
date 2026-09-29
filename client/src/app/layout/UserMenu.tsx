@@ -9,6 +9,7 @@ import PersonIcon from "@mui/icons-material/Person"
 import HistoryIcon from "@mui/icons-material/History"
 import LogoutIcon from "@mui/icons-material/Logout"
 import Divider from "@mui/material/Divider"
+import { Link } from "react-router-dom"
 import type { User } from "../models/user"
 import { useLogoutMutation } from "../../features/accounts/accountApi"
 
@@ -34,6 +35,7 @@ export default function UserMenu({ user }: Props) {
       <Button onClick={handleClick}>
         {user.email}
       </Button>
+
       <Menu
         anchorEl={anchorEl}
         open={open}
@@ -46,13 +48,20 @@ export default function UserMenu({ user }: Props) {
           </ListItemIcon>
           <ListItemText>My profile</ListItemText>
         </MenuItem>
-        <MenuItem>
+
+        <MenuItem
+          component={Link}
+          to="/orders"
+          onClick={handleClose}
+        >
           <ListItemIcon>
             <HistoryIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>My orders</ListItemText>
         </MenuItem>
+
         <Divider />
+
         <MenuItem onClick={() => logout()}>
           <ListItemIcon>
             <LogoutIcon fontSize="small" />

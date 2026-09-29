@@ -2,12 +2,15 @@ using API.Data;
 using API.Dtos;
 using API.Entities;
 using API.Extensions;
+using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class BasketController(StoreContext context) : BaseApiController
+public class BasketController(
+    StoreContext context,
+    PaymentsService paymentsService) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<BasketDto>> GetBasket()
@@ -20,7 +23,9 @@ public class BasketController(StoreContext context) : BaseApiController
     }
 
     [HttpPost]
-    public async Task<ActionResult<BasketDto>> AddItemToBasket(int productId, int quantity)
+    public async Task<ActionResult<BasketDto>> AddItemToBasket(
+        int productId,
+        int quantity)
     {
         var basket = await RetrieveBasket();
 
@@ -28,40 +33,66 @@ public class BasketController(StoreContext context) : BaseApiController
 
         var product = await context.Products.FindAsync(productId);
 
-        if (product == null) return BadRequest("Problem adding item to basket");
+        if (product == null)
+            return BadRequest("Problem adding item to basket");
 
         basket.AddItem(product, quantity);
 
+        var intent = await paymentsService.CreateOrUpdatePaymentIntent(basket);
+
+        if (intent == null)
+            return BadRequest("Problem creating payment intent");
+
+        basket.PaymentIntentId ??= intent.Id;
+        basket.ClientSecret ??= intent.ClientSecret;
+
         var result = await context.SaveChangesAsync() > 0;
 
-        if (result) return CreatedAtAction(nameof(GetBasket), basket.ToDto());
+        if (result)
+            return CreatedAtAction(
+                nameof(GetBasket),
+                basket.ToDto());
 
         return BadRequest("Problem updating basket");
     }
 
     [HttpDelete]
-public async Task<ActionResult> RemoveBasketItem(int productId, int quantity)
-{
-    var basket = await RetrieveBasket();
+    public async Task<ActionResult> RemoveBasketItem(
+        int productId,
+        int quantity)
+    {
+        var basket = await RetrieveBasket();
 
-    if (basket == null) return BadRequest("Unable to retrieve basket");
+        if (basket == null)
+            return BadRequest("Unable to retrieve basket");
 
-    basket.RemoveItem(productId, quantity);
+        basket.RemoveItem(productId, quantity);
 
-    var result = await context.SaveChangesAsync() > 0;
+        if (basket.Items.Count > 0)
+        {
+            var intent = await paymentsService.CreateOrUpdatePaymentIntent(basket);
 
-    if (result) return Ok();
+            if (intent == null)
+                return BadRequest("Problem updating payment intent");
 
-    return BadRequest("Problem removing item from the basket");
-}
-    
+            basket.PaymentIntentId ??= intent.Id;
+            basket.ClientSecret ??= intent.ClientSecret;
+        }
+
+        var result = await context.SaveChangesAsync() > 0;
+
+        if (result) return Ok();
+
+        return BadRequest("Problem removing item from the basket");
+    }
 
     private async Task<Basket?> RetrieveBasket()
     {
         return await context.Baskets
             .Include(x => x.Items)
             .ThenInclude(x => x.Product)
-            .FirstOrDefaultAsync(x => x.BasketId == Request.Cookies["basketId"]);
+            .FirstOrDefaultAsync(
+                x => x.BasketId == Request.Cookies["basketId"]);
     }
 
     private Basket CreateBasket()
@@ -74,9 +105,15 @@ public async Task<ActionResult> RemoveBasketItem(int productId, int quantity)
             Expires = DateTime.UtcNow.AddDays(30)
         };
 
-        Response.Cookies.Append("basketId", basketId, cookieOptions);
+        Response.Cookies.Append(
+            "basketId",
+            basketId,
+            cookieOptions);
 
-        var basket = new Basket { BasketId = basketId };
+        var basket = new Basket
+        {
+            BasketId = basketId
+        };
 
         context.Baskets.Add(basket);
 
