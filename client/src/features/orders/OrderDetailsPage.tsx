@@ -17,7 +17,6 @@ import { currencyFormat, formatAddress, formatPayment } from "../../lib/utilitie
 
 export default function OrderDetailsPage() {
   const { id } = useParams()
-  
 
   const { data: order, isLoading } = useFetchOrderDetailsQuery(
     Number(id)
@@ -231,7 +230,7 @@ export default function OrderDetailsPage() {
                     align="right"
                     sx={{ p: 4 }}
                   >
-                    {currencyFormat(item.price)}
+                    {currencyFormat(item.price * item.quantity)}
                   </TableCell>
                 </TableRow>
               ))}
