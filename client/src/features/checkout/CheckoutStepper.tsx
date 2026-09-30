@@ -16,7 +16,6 @@ import { toast } from "react-toastify"
 import LoadingButton from "@mui/lab/LoadingButton"
 
 import { useFetchAddressQuery } from "../accounts/accountApi"
-import type { Address } from "../../app/models/user"
 import { useBaskets } from "../../lib/hooks/useBaskets"
 import { currencyFormat } from "../../lib/utilities"
 import Review from "./Review"
@@ -43,10 +42,13 @@ export default function CheckoutStepper() {
 
   const [createOrder] = useCreateOrderMutation()
 
-  const {
-    data: { name, ...restAddress } = {} as Address,
-    isLoading
-  } = useFetchAddressQuery()
+  const { data, isLoading } = useFetchAddressQuery()
+
+  let name, restAddress
+
+  if (data) {
+    ({ name, ...restAddress } = data)
+  }
 
   const handleAddressChange = (event: { complete: boolean }) => {
     setAddressComplete(event.complete)

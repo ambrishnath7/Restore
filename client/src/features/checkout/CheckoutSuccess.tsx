@@ -7,11 +7,15 @@ import Button from "@mui/material/Button"
 import { Link, useLocation } from "react-router-dom"
 
 import type { Order } from "../../app/models/order"
-import { currencyFormat, formatAddress, formatPayment } from "../../lib/utilities"
+import {
+  currencyFormat,
+  formatAddress,
+  formatPayment
+} from "../../lib/utilities"
 
 export default function CheckoutSuccess() {
   const { state } = useLocation()
-  const order = state?.data as Order
+  const order = state as Order
 
   if (!order) {
     return (
@@ -20,8 +24,6 @@ export default function CheckoutSuccess() {
       </Typography>
     )
   }
-
-  
 
   return (
     <Container maxWidth="md">
@@ -92,7 +94,7 @@ export default function CheckoutSuccess() {
             variant="body2"
             fontWeight="bold"
           >
-           {formatPayment(order.paymentSummary)}
+            {formatPayment(order.paymentSummary)}
           </Typography>
         </Box>
 
