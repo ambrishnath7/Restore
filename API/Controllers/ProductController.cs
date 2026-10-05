@@ -1,13 +1,18 @@
-using API.Data;
+using API.Dtos;
 using API.Entities;
+using API.Data;
+using AutoMapper;
 using API.Extensions;
 using API.RequestHelpers;
+using API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class ProductsController(StoreContext context) : BaseApiController
+public class ProductsController(StoreContext context, IMapper mapper,
+    ImageService imageService) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<List<Product>>> GetProducts([FromQuery] ProductParams productParams)
@@ -18,7 +23,11 @@ public class ProductsController(StoreContext context) : BaseApiController
         query = query.Search(productParams.SearchTerm);
         query = query.Filter(productParams.Brands, productParams.Types);
 
-        var products = await PagedList<Product>.ToPagedList(query, productParams.PageNumber, productParams.PageSize);
+        var products = await PagedList<Product>.ToPagedList(
+            query,
+            productParams.PageNumber,
+            productParams.PageSize
+        );
 
         Response.AddPaginationHeader(products.Metadata);
 
@@ -29,7 +38,9 @@ public class ProductsController(StoreContext context) : BaseApiController
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
         var product = await context.Products.FindAsync(id);
+
         if (product == null) return NotFound();
+
         return product;
     }
 
@@ -41,4 +52,81 @@ public class ProductsController(StoreContext context) : BaseApiController
 
         return Ok(new { brands, types });
     }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    public async Task<ActionResult<Product>> CreateProduct([FromForm] CreateProductDto productDto)
+    {
+        var product = mapper.Map<Product>(productDto);
+
+        if (productDto.File != null)
+        {
+            var imageResult = await imageService.AddImageAsync(productDto.File);
+
+            if (imageResult.Error != null)
+                return BadRequest(imageResult.Error.Message);
+
+            product.PictureUrl = imageResult.SecureUrl.AbsoluteUri;
+            product.PublicId = imageResult.PublicId;
+        }
+
+        context.Products.Add(product);
+
+        var result = await context.SaveChangesAsync() > 0;
+
+        if (result) return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+
+        return BadRequest("Problem creating new product");
+    }
+
+   [Authorize(Roles = "Admin")]
+[HttpPut]
+public async Task<ActionResult> UpdateProduct([FromForm] UpdateProductDto updateProductDto)
+{
+    var product = await context.Products.FindAsync(updateProductDto.Id);
+
+    if (product == null) return NotFound();
+
+    mapper.Map(updateProductDto, product);
+
+    if (updateProductDto.File != null)
+    {
+        var imageResult = await imageService.AddImageAsync(updateProductDto.File);
+
+        if (imageResult.Error != null)
+            return BadRequest(imageResult.Error.Message);
+
+        if (!string.IsNullOrEmpty(product.PublicId))
+            await imageService.DeleteImageAsync(product.PublicId);
+
+        product.PictureUrl = imageResult.SecureUrl.AbsoluteUri;
+        product.PublicId = imageResult.PublicId;
+    }
+
+    var result = await context.SaveChangesAsync() > 0;
+
+    if (result) return NoContent();
+
+    return BadRequest("Problem updating product");
+}
+
+[Authorize(Roles = "Admin")]
+[HttpDelete("{id}")]
+public async Task<ActionResult> DeleteProduct(int id)
+{
+    var product = await context.Products.FindAsync(id);
+
+    if (product == null) return NotFound();
+
+    if (!string.IsNullOrEmpty(product.PublicId))
+        await imageService.DeleteImageAsync(product.PublicId);
+
+    context.Products.Remove(product);
+
+    var result = await context.SaveChangesAsync() > 0;
+
+    if (result) return Ok();
+
+    return BadRequest("Problem deleting the product");
+}
 }

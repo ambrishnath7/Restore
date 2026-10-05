@@ -66,6 +66,10 @@ export const baseQueryWithErrorHandling: BaseQueryFn<
         }
         break
 
+      case 403:
+        toast.error("403 Forbidden")
+        break
+
       case 404:
         router.navigate("/not-found")
         break

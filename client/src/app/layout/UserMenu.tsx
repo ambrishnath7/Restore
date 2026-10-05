@@ -7,6 +7,7 @@ import ListItemIcon from "@mui/material/ListItemIcon"
 import ListItemText from "@mui/material/ListItemText"
 import PersonIcon from "@mui/icons-material/Person"
 import HistoryIcon from "@mui/icons-material/History"
+import InventoryIcon from "@mui/icons-material/Inventory"
 import LogoutIcon from "@mui/icons-material/Logout"
 import Divider from "@mui/material/Divider"
 import { Link } from "react-router-dom"
@@ -59,6 +60,19 @@ export default function UserMenu({ user }: Props) {
           </ListItemIcon>
           <ListItemText>My orders</ListItemText>
         </MenuItem>
+
+        {user.roles.includes("Admin") && (
+          <MenuItem
+            component={Link}
+            to="/inventory"
+            onClick={handleClose}
+          >
+            <ListItemIcon>
+              <InventoryIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Inventory</ListItemText>
+          </MenuItem>
+        )}
 
         <Divider />
 

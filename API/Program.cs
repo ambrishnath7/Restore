@@ -1,6 +1,7 @@
 using API.Data;
 using API.Entities;
 using API.Middleware;
+using API.RequestHelpers;
 using API.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<MappingProfiles>();
+});
+
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("Cloudinary"));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -31,6 +39,7 @@ builder.Services.AddIdentityApiEndpoints<User>(options =>
 .AddEntityFrameworkStores<StoreContext>();
 
 builder.Services.AddScoped<PaymentsService>();
+builder.Services.AddScoped<ImageService>();
 
 var app = builder.Build();
 
