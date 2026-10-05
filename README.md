@@ -17,7 +17,7 @@ A full-stack e-commerce application built with .NET 9, React 19 and Redux Toolki
 
 ## Tech Stack
 
-Backend:
+**Backend**
 - .NET 9 Web API (C#)
 - Entity Framework Core with SQLite
 - ASP.NET Core Identity
@@ -25,7 +25,7 @@ Backend:
 - Stripe API
 - Cloudinary
 
-Frontend:
+**Frontend**
 - React 19 with TypeScript
 - Vite
 - Redux Toolkit and RTK Query
@@ -36,37 +36,38 @@ Frontend:
 
 ## Getting Started
 
-Prerequisites:
+### Prerequisites
 - .NET 9 SDK
 - Node.js (LTS)
 - A Stripe account (test mode) and a Cloudinary account
 
-1. Clone the repository
+### 1. Clone the repository
+```bash
+git clone https://github.com/ambrishnath7/Restore.git
+cd Restore
+```
 
-    git clone https://github.com/ambrishnath7/Restore.git
-    cd Restore
+### 2. Configure the API
+Add your Stripe and Cloudinary keys to `API/appsettings.Development.json` or use user secrets. Never commit real keys.
 
-2. Configure the API
-
-Add your Stripe and Cloudinary keys to API/appsettings.Development.json or use user secrets. Never commit real keys.
-
-3. Run the API
-
-    cd API
-    dotnet restore
-    dotnet watch
-
+### 3. Run the API
+```bash
+cd API
+dotnet restore
+dotnet watch
+```
 The API runs at http://localhost:5004.
 
-4. Run the client
-
-    cd client
-    npm install
-    npm run dev
-
+### 4. Run the client
+```bash
+cd client
+npm install
+npm run dev
+```
 The client runs at https://localhost:3000.
 
-Stripe test card: 4242 4242 4242 4242, any future expiry date and any CVC.
+### Stripe test card
+`4242 4242 4242 4242`, any future expiry date and any CVC.
 
 ## What I Learned
 
@@ -84,6 +85,6 @@ Stripe test card: 4242 4242 4242 4242, any future expiry date and any CVC.
 
 ## Author
 
-Ambrish - https://github.com/ambrishnath7
+Ambrish – https://github.com/ambrishnath7
 
 Built while following the "Learn to build an e-commerce store with .NET, React & Redux" course on Udemy.
