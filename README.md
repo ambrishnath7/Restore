@@ -87,4 +87,4 @@ The client runs at https://localhost:3000.
 
 Ambrish – https://github.com/ambrishnath7
 
-Built while following the "Learn to build an e-commerce store with .NET, React & Redux" course on Udemy.
+Built by Ambrish, Software Developer at Conprg Technologies, as a full-stack learning project.
