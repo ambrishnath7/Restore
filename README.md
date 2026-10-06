@@ -1,19 +1,17 @@
-# Restore – E-Commerce Store
+# Restore – E-Commerce Platform
 
-A full-stack e-commerce application built with .NET 9, React 19 and Redux Toolkit Query (RTK Query). It includes a product catalog, shopping basket, Stripe checkout, order history, authentication, and an admin inventory.
+A full-stack e-commerce platform built with .NET 9, React 19 and Redux Toolkit Query (RTK Query). It covers the complete shopping flow: product catalog, basket, secure checkout with Stripe, order history, user authentication and an admin inventory.
 
-## Features
+## Key Features
 
 - Product catalog with paging, sorting, searching and filtering
-- Product details page
-- Shopping basket
-- Registration and login with ASP.NET Core Identity
-- Checkout with Stripe payments (3D Secure supported)
+- Shopping basket and checkout with Stripe payments (3D Secure supported)
 - Order creation and order history
+- User registration and login with ASP.NET Core Identity
 - Admin inventory: create, edit and delete products, with image upload to Cloudinary
-- Role-based access: admin-only routes, hidden menu links, and 403 handling
-- Light and dark mode
+- Role-based access control on the API and the client
 - Global error handling with toast notifications
+- Light and dark mode
 
 ## Tech Stack
 
@@ -33,6 +31,13 @@ A full-stack e-commerce application built with .NET 9, React 19 and Redux Toolki
 - Material UI v6
 - React Hook Form with Zod validation
 - React Toastify
+
+## Architecture
+
+- **API:** a REST API with controllers, services and Entity Framework Core for data access
+- **Client:** a single-page React application that uses RTK Query for data fetching and caching
+- **Authentication:** cookie-based, using ASP.NET Core Identity with admin and member roles
+- **Payments:** Stripe payment intents, confirmed on the client and verified on the server
 
 ## Getting Started
 
@@ -69,22 +74,14 @@ The client runs at https://localhost:3000.
 ### Stripe test card
 `4242 4242 4242 4242`, any future expiry date and any CVC.
 
-## What I Learned
-
-- Building a REST API with .NET, EF Core and Identity
-- Managing client state and server cache with RTK Query
-- Integrating third-party services (Stripe payments, Cloudinary image uploads)
-- Sending files with FormData from React to .NET
-- Role-based authorization on both the API and the client
-
 ## Roadmap
 
 - Coupon codes using Stripe promotion codes
 - Email confirmation for orders
-- Deployment
+- Cloud deployment
 
 ## Author
 
-Ambrish – https://github.com/ambrishnath7
-
-Built while following the "Learn to build an e-commerce store with .NET, React & Redux" course on Udemy.
+**Ambrish**
+Software Developer, Conprg Technologies
+GitHub: https://github.com/ambrishnath7
