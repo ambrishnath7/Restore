@@ -82,6 +82,6 @@ The client runs at https://localhost:3000.
 
 ## Author
 
-**Ambrish**
-Software Developer, Conprg Technologies
-GitHub: https://github.com/ambrishnath7
+Ambrish – https://github.com/ambrishnath7
+
+Built while following the "Learn to build an e-commerce store with .NET, React & Redux" course on Udemy.
