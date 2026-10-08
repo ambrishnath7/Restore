@@ -1,3 +1,4 @@
+import { useState } from "react"
 import AppBar from "@mui/material/AppBar"
 import Toolbar from "@mui/material/Toolbar"
 import Typography from "@mui/material/Typography"
@@ -8,82 +9,115 @@ import List from "@mui/material/List"
 import ListItem from "@mui/material/ListItem"
 import Badge from "@mui/material/Badge"
 import ShoppingCart from "@mui/icons-material/ShoppingCart"
+import Search from "@mui/icons-material/Search"
 import Box from "@mui/material/Box"
+import Button from "@mui/material/Button"
+import InputBase from "@mui/material/InputBase"
 import LinearProgress from "@mui/material/LinearProgress"
-import { NavLink, Link } from "react-router-dom"
+import { NavLink, Link, useNavigate } from "react-router-dom"
 import { useAppDispatch, useAppSelector } from "../store/store"
 import { toggleDarkMode } from "./uiSlice"
 import { useFetchBasketQuery } from "../../features/basket/basketApi"
 import { useUserInfoQuery } from "../../features/accounts/accountApi"
+import { resetParams, setSearchTerm, setTypes } from "../../features/catalog/catalogSlice"
 import UserMenu from "./UserMenu"
 
-const midLinks = [
-  { title: 'catalog', path: '/catalog' },
-  { title: 'about', path: '/about' },
-  { title: 'contact', path: '/contact' },
-]
+const categories = ["Boards", "Boots", "Gloves", "Hats"]
 
 const rightLinks = [
-  { title: 'login', path: '/login' },
-  { title: 'register', path: '/register' },
+  { title: "login", path: "/login" },
+  { title: "register", path: "/register" },
 ]
 
 const navStyles = {
-  color: 'inherit',
-  textDecoration: 'none',
-  typography: 'h6',
-  '&:hover': {
-    color: 'grey.500'
-  },
-  '&.active': {
-    color: '#baecf9'
-  }
+  color: "inherit",
+  textDecoration: "none",
+  typography: "subtitle1",
+  fontWeight: 600,
+  "&:hover": { color: "grey.500" },
+  "&.active": { color: "#baecf9" },
 }
 
 function Navbar() {
-  const { isLoading, darkMode } = useAppSelector(state => state.ui)
+  const { isLoading, darkMode } = useAppSelector((state) => state.ui)
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const { data: basket } = useFetchBasketQuery()
   const { data: user } = useUserInfoQuery()
+  const [search, setSearch] = useState("")
 
-  const itemCount = basket?.items.reduce((sum, item) => sum + item.quantity, 0) || 0
+  const itemCount =
+    basket?.items.reduce((sum, item) => sum + item.quantity, 0) || 0
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    dispatch(setSearchTerm(search))
+    navigate("/catalog")
+  }
+
+  const handleCategory = (type: string) => {
+    dispatch(setTypes([type]))
+    navigate("/catalog")
+  }
+
+  const handleAll = () => {
+    dispatch(resetParams())
+    setSearch("")
+    navigate("/catalog")
+  }
 
   return (
     <AppBar position="fixed">
-      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Toolbar sx={{ gap: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
           <Typography
             variant="h6"
             component={NavLink}
             to="/"
-            sx={navStyles}
+            sx={{ ...navStyles, typography: "h6", fontWeight: 800 }}
           >
-            RESTORE
+            ALPINE CO.
           </Typography>
           <IconButton onClick={() => dispatch(toggleDarkMode())}>
-            {darkMode ? (
-              <DarkMode />
-            ) : (
-              <LightMode sx={{ color: 'yellow' }} />
-            )}
+            {darkMode ? <DarkMode /> : <LightMode sx={{ color: "yellow" }} />}
           </IconButton>
         </Box>
 
-        <List sx={{ display: 'flex' }}>
-          {midLinks.map(({ title, path }) => (
-            <ListItem
-              component={NavLink}
-              to={path}
-              key={path}
-              sx={navStyles}
-            >
-              {title.toUpperCase()}
-            </ListItem>
-          ))}
-        </List>
+        <Box
+          component="form"
+          onSubmit={handleSearch}
+          sx={{
+            flexGrow: 1,
+            maxWidth: 640,
+            mx: "auto",
+            display: { xs: "none", sm: "flex" },
+            alignItems: "center",
+            bgcolor: "rgba(255,255,255,0.12)",
+            border: "1px solid rgba(255,255,255,0.25)",
+            borderRadius: 2,
+            pl: 2,
+          }}
+        >
+          <InputBase
+            placeholder="Search for boards, boots, gloves..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{ flexGrow: 1, color: "inherit" }}
+            inputProps={{ "aria-label": "Search products" }}
+          />
+          <IconButton type="submit" aria-label="Search" sx={{ color: "inherit" }}>
+            <Search />
+          </IconButton>
+        </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton component={Link} to="/basket" size="large" sx={{ color: 'inherit' }}>
+        <Box sx={{ display: "flex", alignItems: "center", ml: "auto" }}>
+          <IconButton
+            component={Link}
+            to="/basket"
+            size="large"
+            aria-label="Basket"
+            sx={{ color: "inherit" }}
+          >
             <Badge badgeContent={itemCount} color="secondary">
               <ShoppingCart />
             </Badge>
@@ -92,14 +126,9 @@ function Navbar() {
           {user ? (
             <UserMenu user={user} />
           ) : (
-            <List sx={{ display: 'flex' }}>
+            <List sx={{ display: "flex" }}>
               {rightLinks.map(({ title, path }) => (
-                <ListItem
-                  component={NavLink}
-                  to={path}
-                  key={path}
-                  sx={navStyles}
-                >
+                <ListItem component={NavLink} to={path} key={path} sx={navStyles}>
                   {title.toUpperCase()}
                 </ListItem>
               ))}
@@ -108,8 +137,33 @@ function Navbar() {
         </Box>
       </Toolbar>
 
+      <Box
+        sx={{
+          display: "flex",
+          gap: 1,
+          px: 2,
+          pb: 1,
+          overflowX: "auto",
+          bgcolor: "rgba(0,0,0,0.18)",
+        }}
+      >
+        <Button color="inherit" size="small" onClick={handleAll}>
+          All products
+        </Button>
+        {categories.map((c) => (
+          <Button
+            key={c}
+            color="inherit"
+            size="small"
+            onClick={() => handleCategory(c)}
+          >
+            {c}
+          </Button>
+        ))}
+      </Box>
+
       {isLoading && (
-        <Box sx={{ width: '100%' }}>
+        <Box sx={{ width: "100%" }}>
           <LinearProgress color="secondary" />
         </Box>
       )}

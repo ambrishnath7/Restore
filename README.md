@@ -1,4 +1,4 @@
-# Restore – E-Commerce Platform
+# Alpine Co. – E-Commerce Platform
 
 A full-stack e-commerce platform built with .NET 9, React 19 and Redux Toolkit Query (RTK Query). It covers the complete shopping flow: product catalog, basket, secure checkout with Stripe, order history, user authentication and an admin inventory.
 
@@ -13,7 +13,7 @@ A full-stack e-commerce platform built with .NET 9, React 19 and Redux Toolkit Q
 - Global error handling with toast notifications
 - Light and dark mode
 
-## Tech Stack
+## Tech Stack   
 
 **Backend**
 - .NET 9 Web API (C#)
@@ -48,8 +48,8 @@ A full-stack e-commerce platform built with .NET 9, React 19 and Redux Toolkit Q
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/ambrishnath7/Restore.git
-cd Restore
+git clone https://github.com/ambrishnath7/Alpine Co..git
+cd Alpine Co.
 ```
 
 ### 2. Configure the API
@@ -58,7 +58,7 @@ Add your Stripe and Cloudinary keys to `API/appsettings.Development.json` or use
 ### 3. Run the API
 ```bash
 cd API
-dotnet restore
+dotnet Alpine Co.
 dotnet watch
 ```
 The API runs at http://localhost:5004.
