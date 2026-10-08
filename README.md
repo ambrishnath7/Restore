@@ -1,6 +1,6 @@
 # Alpine Co. – E-Commerce Platform
 
-A full-stack e-commerce platform built with .NET 9, React 19 and Redux Toolkit Query (RTK Query). It covers the complete shopping flow: product catalog, basket, secure checkout with Stripe, order history, user authentication and an admin inventory.
+A full-stack e-commerce platform for snow gear, built with .NET 9, React 19 and Redux Toolkit Query (RTK Query). It covers the complete shopping flow: product catalog, basket, secure checkout with Stripe, order history, user authentication and an admin inventory.
 
 ## Key Features
 
@@ -13,11 +13,11 @@ A full-stack e-commerce platform built with .NET 9, React 19 and Redux Toolkit Q
 - Global error handling with toast notifications
 - Light and dark mode
 
-## Tech Stack   
+## Tech Stack
 
 **Backend**
 - .NET 9 Web API (C#)
-- Entity Framework Core with SQLite
+- Entity Framework Core with SQL Server
 - ASP.NET Core Identity
 - AutoMapper
 - Stripe API
@@ -32,38 +32,37 @@ A full-stack e-commerce platform built with .NET 9, React 19 and Redux Toolkit Q
 - React Hook Form with Zod validation
 - React Toastify
 
-## Architecture
-
-- **API:** a REST API with controllers, services and Entity Framework Core for data access
-- **Client:** a single-page React application that uses RTK Query for data fetching and caching
-- **Authentication:** cookie-based, using ASP.NET Core Identity with admin and member roles
-- **Payments:** Stripe payment intents, confirmed on the client and verified on the server
-
 ## Getting Started
 
 ### Prerequisites
-- .NET 9 SDK
+- .NET SDK
 - Node.js (LTS)
+- Docker Desktop (for the SQL Server database)
 - A Stripe account (test mode) and a Cloudinary account
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/ambrishnath7/Alpine Co..git
-cd Alpine Co.
+git clone https://github.com/ambrishnath7/Restore.git
+cd Restore
 ```
 
-### 2. Configure the API
-Add your Stripe and Cloudinary keys to `API/appsettings.Development.json` or use user secrets. Never commit real keys.
-
-### 3. Run the API
+### 2. Start the database
 ```bash
-cd API
-dotnet Alpine Co.
+docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=<your-password>" -p 1433:1433 --name sql -d mcr.microsoft.com/mssql/server:2022-latest
+```
+
+### 3. Configure the API
+Add your database connection string, Stripe keys and Cloudinary keys to `api/appsettings.Development.json` or use user secrets. Never commit real keys.
+
+### 4. Run the API
+```bash
+cd api
+dotnet restore
 dotnet watch
 ```
-The API runs at http://localhost:5004.
+The API runs at https://localhost:5004.
 
-### 4. Run the client
+### 5. Run the client
 ```bash
 cd client
 npm install
@@ -82,6 +81,6 @@ The client runs at https://localhost:3000.
 
 ## Author
 
-Ambrish – https://github.com/ambrishnath7
-
-Built while following the "Learn to build an e-commerce store with .NET, React & Redux" course on Udemy.
+**Ambrish**
+Software Developer, Conprg Technologies
+GitHub: https://github.com/ambrishnath7
