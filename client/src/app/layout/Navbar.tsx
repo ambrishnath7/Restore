@@ -3,8 +3,11 @@ import AppBar from "@mui/material/AppBar"
 import Toolbar from "@mui/material/Toolbar"
 import Typography from "@mui/material/Typography"
 import IconButton from "@mui/material/IconButton"
+import Tooltip from "@mui/material/Tooltip"
 import DarkMode from "@mui/icons-material/DarkMode"
 import LightMode from "@mui/icons-material/LightMode"
+import GitHubIcon from "@mui/icons-material/GitHub"
+import LanguageIcon from "@mui/icons-material/Language"
 import List from "@mui/material/List"
 import ListItem from "@mui/material/ListItem"
 import Badge from "@mui/material/Badge"
@@ -21,8 +24,14 @@ import { useFetchBasketQuery } from "../../features/basket/basketApi"
 import { useUserInfoQuery } from "../../features/accounts/accountApi"
 import { resetParams, setSearchTerm, setTypes } from "../../features/catalog/catalogSlice"
 import UserMenu from "./UserMenu"
+import logo from "../../assets/logo-icon.png"
 
-const categories = ["Boards", "Boots", "Gloves", "Hats"]
+const categories = [
+  { name: "Boards", icon: "🏂" },
+  { name: "Boots", icon: "🥾" },
+  { name: "Gloves", icon: "🧤" },
+  { name: "Hats", icon: "🧢" },
+]
 
 const rightLinks = [
   { title: "login", path: "/login" },
@@ -74,8 +83,16 @@ function Navbar() {
             variant="h6"
             component={NavLink}
             to="/"
-            sx={{ ...navStyles, typography: "h6", fontWeight: 800 }}
+            sx={{
+              ...navStyles,
+              typography: "h6",
+              fontWeight: 800,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
           >
+            <Box component="img" src={logo} alt="" sx={{ height: 38 }} />
             ALPINE CO.
           </Typography>
           <IconButton onClick={() => dispatch(toggleDarkMode())}>
@@ -111,6 +128,32 @@ function Navbar() {
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", ml: "auto" }}>
+          <Tooltip title="My GitHub">
+            <IconButton
+              component="a"
+              href="https://github.com/ambrishnath7"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="GitHub"
+              sx={{ color: "inherit" }}
+            >
+              <GitHubIcon />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="My Portfolio">
+            <IconButton
+              component="a"
+              href="https://ambrishnath7.github.io"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Portfolio"
+              sx={{ color: "inherit" }}
+            >
+              <LanguageIcon />
+            </IconButton>
+          </Tooltip>
+
           <IconButton
             component={Link}
             to="/basket"
@@ -147,17 +190,23 @@ function Navbar() {
           bgcolor: "rgba(0,0,0,0.18)",
         }}
       >
-        <Button color="inherit" size="small" onClick={handleAll}>
+        <Button
+          color="inherit"
+          size="small"
+          onClick={handleAll}
+          startIcon={<span>🏔️</span>}
+        >
           All products
         </Button>
         {categories.map((c) => (
           <Button
-            key={c}
+            key={c.name}
             color="inherit"
             size="small"
-            onClick={() => handleCategory(c)}
+            onClick={() => handleCategory(c.name)}
+            startIcon={<span>{c.icon}</span>}
           >
-            {c}
+            {c.name}
           </Button>
         ))}
       </Box>
