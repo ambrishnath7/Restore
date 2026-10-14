@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using API.Entities;
 
 namespace API.Data;
@@ -14,18 +15,46 @@ public class DbInitializer
     public static async Task InitDb(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<DbInitializer>>();
 
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>()
-            ?? throw new InvalidOperationException("Failed to retrieve store context");
+        try
+        {
+            logger.LogInformation("--> [Startup 1/4] Starting database initialization...");
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>()
+                ?? throw new InvalidOperationException("Failed to retrieve store context");
 
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            logger.LogInformation("--> [Startup 2/4] Database provider in use: {Provider}", context.Database.ProviderName);
 
-        await SeedData(context, userManager);
+            // 1. Before migrate / schema ensure
+            logger.LogInformation("--> [Startup 3/4] BEFORE MIGRATE: Checking database schema...");
+            if (context.Database.IsSqlite())
+            {
+                logger.LogInformation("--> [Startup 3/4] SQLite provider active. Running EnsureCreated...");
+                var created = context.Database.EnsureCreated();
+                logger.LogInformation("--> [Startup 3/4] AFTER MIGRATE: SQLite EnsureCreated completed (Created: {Created}).", created);
+            }
+            else
+            {
+                logger.LogInformation("--> [Startup 3/4] SQL Server provider active. Running Migrate...");
+                context.Database.Migrate();
+                logger.LogInformation("--> [Startup 3/4] AFTER MIGRATE: Database migrations completed.");
+            }
+
+            // 2. Before & After seed
+            logger.LogInformation("--> [Startup 4/4] BEFORE SEED: Checking if seed data is needed...");
+            await SeedData(context, userManager, logger);
+            logger.LogInformation("--> [Startup 4/4] AFTER SEED: Database initialization and seeding completed successfully.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "--> [Startup ERROR] Database initialization failed: {Message}", ex.Message);
+            throw;
+        }
     }
 
-    private static async Task SeedData(StoreContext context, UserManager<User> userManager)
+    private static async Task SeedData(StoreContext context, UserManager<User> userManager, ILogger logger)
     {
-        context.Database.Migrate();
 
         if (!userManager.Users.Any())
         {
@@ -46,9 +75,20 @@ public class DbInitializer
 
             await userManager.CreateAsync(admin, "Pa$$w0rd");
             await userManager.AddToRolesAsync(admin, ["Member", "Admin"]);
+            logger.LogInformation("--> [Seeding] Seeded default users (bob@test.com, admin@test.com).");
+        }
+        else
+        {
+            logger.LogInformation("--> [Seeding] Users already exist, skipping user seed.");
         }
 
-        if (context.Products.Any()) return;
+        if (context.Products.Any())
+        {
+            logger.LogInformation("--> [Seeding] Products already exist ({Count} items), skipping product seed.", context.Products.Count());
+            return;
+        }
+
+        logger.LogInformation("--> [Seeding] Products table is empty, seeding default catalog products...");
 
         var products = new List<Product>
         {
@@ -236,5 +276,6 @@ public class DbInitializer
 
         context.Products.AddRange(products);
         context.SaveChanges();
+        logger.LogInformation("--> [Seeding] Successfully seeded {Count} products into database.", products.Count);
     }
 }

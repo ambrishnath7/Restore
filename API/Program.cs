@@ -3,6 +3,7 @@ using API.Entities;
 using API.Middleware;
 using API.RequestHelpers;
 using API.Services;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure listening port (default 8080 or from PORT environment variable for Render/Docker)
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://*:{port}");
+
+// Ensure DataProtection keys are stored in a writable path in Linux containers (/tmp/dp-keys)
+var keysPath = Environment.GetEnvironmentVariable("DATA_PROTECTION_KEYS_PATH") 
+    ?? Path.Combine(Path.GetTempPath(), "dp-keys");
+if (!Directory.Exists(keysPath))
+{
+    Directory.CreateDirectory(keysPath);
+}
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
 
 // Add services to the container.
 
@@ -26,12 +37,36 @@ builder.Services.Configure<CloudinarySettings>(
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+// Configure database connection: use SQLite with writable /tmp/store.db by default or SQL Server if configured
+var envConn = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+var dbPath = Environment.GetEnvironmentVariable("DB_PATH") ?? "/tmp/store.db";
+
+var dbDir = Path.GetDirectoryName(dbPath);
+if (!string.IsNullOrEmpty(dbDir) && !Directory.Exists(dbDir))
+{
+    Directory.CreateDirectory(dbDir);
+}
 
 builder.Services.AddDbContext<StoreContext>(opt =>
 {
-    opt.UseSqlServer(connectionString);
+    if (!string.IsNullOrEmpty(envConn))
+    {
+        if (envConn.Contains("Server=") || envConn.Contains("Database="))
+        {
+            opt.UseSqlServer(envConn);
+        }
+        else
+        {
+            var sqliteConn = envConn.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase)
+                ? envConn
+                : $"Data Source={envConn}";
+            opt.UseSqlite(sqliteConn);
+        }
+    }
+    else
+    {
+        opt.UseSqlite($"Data Source={dbPath}");
+    }
 });
 
 builder.Services.AddCors();
