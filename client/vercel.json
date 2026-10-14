@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://restore-lbtm.onrender.com/api/$1" },
+    { "source": "/images/(.*)", "destination": "https://restore-lbtm.onrender.com/images/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
