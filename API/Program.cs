@@ -8,6 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure listening port (default 8080 or from PORT environment variable for Render/Docker)
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://*:{port}");
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -22,9 +26,12 @@ builder.Services.Configure<CloudinarySettings>(
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<StoreContext>(opt =>
 {
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    opt.UseSqlServer(connectionString);
 });
 
 builder.Services.AddCors();
@@ -53,12 +60,17 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
+    ?? builder.Configuration["AllowedOrigins"]?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    ?? ["https://restore-sooty.vercel.app"];
+
 app.UseCors(opt =>
 {
-    opt.AllowAnyHeader()
+    opt.WithOrigins(allowedOrigins)
+       .AllowAnyHeader()
        .AllowAnyMethod()
        .AllowCredentials()
-       .WithOrigins("https://localhost:3000");
+       .WithExposedHeaders("Pagination");
 });
 
 app.UseAuthentication();
